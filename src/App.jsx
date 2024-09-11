@@ -8,16 +8,26 @@ const App = () => {
   const [error, setError] = useState(null);
   const [wheelKey, setWheelKey] = useState(0);
 
-  const segColors = [
-    "#EE4040",
-    "#F0CF50",
-    "#815CD1",
-    "#3DA5E0",
-    "#34A24F",
-    "#F9AA1F",
-    "#EC3F3F",
-    "#FF9000",
-  ];
+  const getRandomColor = () => {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  };
+  
+  const generateRandomColors = (numColors) => {
+    const colors = [];
+    for (let i = 0; i < numColors; i++) {
+      colors.push(getRandomColor());
+    }
+    return colors;
+  };
+
+
+  const segColors = generateRandomColors(200);
+
 
   const handleFileUpload = useCallback((event) => {
     const file = event.target.files[0];
@@ -117,7 +127,7 @@ const App = () => {
           <WheelComponent
             key={wheelKey}
             segments={employees.map((emp) => emp.employeeId)}
-            segColors={segColors}
+            segColors={segColors.map ((color) => color)}
             onFinished={(winner) => onFinished(winner)}
             primaryColor="black"
             contrastColor="white"
