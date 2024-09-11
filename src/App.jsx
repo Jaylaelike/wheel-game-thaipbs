@@ -1,6 +1,8 @@
 import { useState, useCallback, useEffect } from "react";
 import { Upload } from "lucide-react";
 import WheelComponent from "react-wheel-of-prizes";
+import { useWindowSize } from "@uidotdev/usehooks";
+import Confetti from "react-confetti";
 
 const App = () => {
   const [employees, setEmployees] = useState([]);
@@ -8,15 +10,17 @@ const App = () => {
   const [error, setError] = useState(null);
   const [wheelKey, setWheelKey] = useState(0);
 
+  const { width, height } = useWindowSize();
+
   const getRandomColor = () => {
-    const letters = '0123456789ABCDEF';
-    let color = '#';
+    const letters = "0123456789ABCDEF";
+    let color = "#";
     for (let i = 0; i < 6; i++) {
       color += letters[Math.floor(Math.random() * 16)];
     }
     return color;
   };
-  
+
   const generateRandomColors = (numColors) => {
     const colors = [];
     for (let i = 0; i < numColors; i++) {
@@ -25,9 +29,7 @@ const App = () => {
     return colors;
   };
 
-
   const segColors = generateRandomColors(200);
-
 
   const handleFileUpload = useCallback((event) => {
     const file = event.target.files[0];
@@ -84,6 +86,16 @@ const App = () => {
     setWheelKey((prevKey) => prevKey + 1);
   }, [employees]);
 
+  const [showConfetti, setShowConfetti] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowConfetti(false);
+    }, 10000); // 10 seconds
+
+    return () => clearTimeout(timer); // Cleanup the timer on component unmount
+  }, []);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
       <h1 className="text-3xl font-bold mb-8">สุ่มกาช่าผู้โชคดี</h1>
@@ -127,7 +139,7 @@ const App = () => {
           <WheelComponent
             key={wheelKey}
             segments={employees.map((emp) => emp.employeeId)}
-            segColors={segColors.map ((color) => color)}
+            segColors={segColors.map((color) => color)}
             onFinished={(winner) => onFinished(winner)}
             primaryColor="black"
             contrastColor="white"
@@ -140,6 +152,7 @@ const App = () => {
           />
           {selectedEmployee && (
             <div className="mt-6 text-center">
+             <Confetti width={width} height={height} recycle={showConfetti} />
               <h2 className="text-2xl font-semibold mb-4">
                 🎉 ผู้โชคดี: {selectedEmployee.employeeId} 🎉
               </h2>
@@ -153,4 +166,3 @@ const App = () => {
 };
 
 export default App;
-
