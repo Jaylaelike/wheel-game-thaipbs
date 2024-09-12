@@ -132,6 +132,12 @@ const App = () => {
           </div>
         </div>
         {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
+        {employees.length > 0 && (
+          <>
+            <h2 className="text-xl font-semibold mb-4">จำนวนผู้เข้าร่วม</h2>
+            <ul className="mb-4">{employees.length} คน</ul>
+          </>
+        )}
       </div>
 
       {employees.length > 0 && (
@@ -152,7 +158,7 @@ const App = () => {
           />
           {selectedEmployee && (
             <div className="mt-6 text-center">
-             <Confetti width={width} height={height} recycle={showConfetti} />
+              <Confetti width={width} height={height} recycle={showConfetti} />
               <h2 className="text-2xl font-semibold mb-4">
                 🎉 ผู้โชคดี: {selectedEmployee.employeeId} 🎉
               </h2>
