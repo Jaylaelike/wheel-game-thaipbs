@@ -5,6 +5,8 @@ import { useWindowSize } from "@uidotdev/usehooks";
 import Confetti from "react-confetti";
 import { Upload, Download } from "lucide-react"; // Add Download icon
 
+import LayoutGridPosts from './joy-treasury/layout-grid-posts/LayoutGridPosts';
+
 
 const App = () => {
   const [employees, setEmployees] = useState([]);
@@ -144,8 +146,47 @@ const App = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
       <h1 className="text-3xl font-bold mb-8">สุ่มกาช่าผู้โชคดี</h1>
-      <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-2xl">
-        <div className="mb-6">
+
+      {selectedEmployee && (
+            <div className=" text-center">
+              <Confetti width={width} height={height} recycle={showConfetti} />
+              <h2 className="text-2xl font-semibold mb-4">
+                🎉 ผู้โชคดี: {selectedEmployee.employeeId} 🎉
+              </h2>
+              <p>ชื่อพนักงาน : {selectedEmployee.employeeId}</p>
+             
+              <p>รหัส : {selectedEmployee.department}</p>
+            </div>
+          )}
+
+      <LayoutGridPosts>
+
+
+      {employees.length > 0 && (
+        <div className="grid grid-cols-1 items-center justify-center">
+          <WheelComponent
+            key={wheelKey}
+            segments={employees.map((emp) => emp.employeeId)}
+            segColors={segColors.map((color) => color)}
+            onFinished={(winner) => onFinished(winner)}
+            primaryColor="black"
+            contrastColor="white"
+            buttonText="หมุน"
+            isOnlyOnce={false}
+            size={290}
+            upDuration={50}
+            downDuration={600}
+            fontFamily="Arial"
+          />
+         
+       
+        </div>
+      )}
+
+   
+
+      <div className="bg-white rounded-lg shadow-lg p-4 max-w-2xl">
+       
           <label
             htmlFor="csv-upload"
             className="block text-sm font-medium text-gray-700 mb-2"
@@ -157,7 +198,7 @@ const App = () => {
               htmlFor="csv-upload"
               className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
             >
-              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+              <div className="flex flex-col items-center justify-center">
                 <Upload className="w-8 h-8 mb-2 text-gray-500" />
                 <p className="mb-2 text-sm text-gray-500">
                   คลิกเพื่ออัพโหลดหรือลากและวาง
@@ -175,7 +216,7 @@ const App = () => {
               />
             </label>
           </div>
-        </div>
+       
         {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
         {employees.length > 0 && (
           <>
@@ -185,38 +226,11 @@ const App = () => {
         )}
       </div>
 
-      {employees.length > 0 && (
-        <div className="flex flex-col items-center justify-center min-h-screen">
-          <WheelComponent
-            key={wheelKey}
-            segments={employees.map((emp) => emp.employeeId)}
-            segColors={segColors.map((color) => color)}
-            onFinished={(winner) => onFinished(winner)}
-            primaryColor="black"
-            contrastColor="white"
-            buttonText="หมุน"
-            isOnlyOnce={false}
-            size={290}
-            upDuration={50}
-            downDuration={600}
-            fontFamily="Arial"
-          />
-          {selectedEmployee && (
-            <div className="mt-6 text-center">
-              <Confetti width={width} height={height} recycle={showConfetti} />
-              <h2 className="text-2xl font-semibold mb-4">
-                🎉 ผู้โชคดี: {selectedEmployee.employeeId} 🎉
-              </h2>
-              <p>ชื่อพนักงาน : {selectedEmployee.employeeId}</p>
-             
-              <p>รหัส : {selectedEmployee.department}</p>
-            </div>
-          )}
-        </div>
-      )}
+      
+
 
       {spinResults.length > 0 && (
-        <div className="mt-8 w-full max-w-2xl">
+        <div className="w-full max-w-2xl">
           <h2 className="text-xl font-semibold mb-4">ผลการสุ่ม</h2>
           <table className="w-full text-left border-collapse">
             <thead>
@@ -238,14 +252,11 @@ const App = () => {
               ))}
             </tbody>
           </table>
-        </div>
-      )}
 
-
-    {spinResults.length > 0 && (
-      <div className="mt-8 w-full max-w-2xl">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">ผลการสุ่ม</h2>
+          {spinResults.length > 0 && (
+      <div className="w-full max-w-2xl">
+        <div className="gird grid-cols-1 justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">ส่งออกผลการสุ่ม</h2>
           <button
             onClick={exportToCSV}
             className="flex items-center px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
@@ -259,9 +270,28 @@ const App = () => {
         </table>
       </div>
     )}
+        </div>
+      )}
+
+<div>
+     
+      </div>
+
+      
+
+
+
+   
 
       {/* Remove the employeesWithEpoch table */}
+
+      </LayoutGridPosts>
+
+     
+     
     </div>
+
+    
   );
 };
 
