@@ -26,7 +26,7 @@ const App = () => {
     const csvContent = [
       headers.join(","),
       ...spinResults.map((result, index) =>
-        [index + 1, result.employeeId, result.department].join(",")
+        [index + 1, result.timestamp, result.employeeId].join(",")
       ),
     ].join("\n");
 
