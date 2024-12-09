@@ -3,22 +3,20 @@ import { useState, useCallback, useEffect } from "react";
 import WheelComponent from "react-wheel-of-prizes";
 import { useWindowSize } from "@uidotdev/usehooks";
 import Confetti from "react-confetti";
-import { Upload, Download } from "lucide-react"; // Add Download icon
+import { Upload, Download } from "lucide-react";
 
 import LayoutGridPosts from "./joy-treasury/layout-grid-posts/LayoutGridPosts";
 
 const App = () => {
   const [employees, setEmployees] = useState([]);
-  // const [employeesWithEpoch, setEmployeesWithEpoch] = useState([]);
+  const [availableEmployees, setAvailableEmployees] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [error, setError] = useState(null);
   const [wheelKey, setWheelKey] = useState(0);
   const [spinResults, setSpinResults] = useState([]);
-  // const [currentEpoch, setCurrentEpoch] = useState(0);
 
   const { width, height } = useWindowSize();
 
-  // Add this new function to export spinResults to CSV
   const exportToCSV = () => {
     if (spinResults.length === 0) return;
 
@@ -60,8 +58,6 @@ const App = () => {
     return colors;
   };
 
-  const segColors = generateRandomColors(200);
-
   const handleFileUpload = useCallback((event) => {
     const file = event.target.files[0];
     if (file) {
@@ -77,8 +73,6 @@ const App = () => {
                 timestamp,
                 firstname,
                 employeeId,
-                // department,
-                // learningChannel,
               ] = line.split(",").map((item) => item.trim());
               if (!timestamp || !firstname || !employeeId) {
                 throw new Error("Invalid CSV format");
@@ -87,8 +81,6 @@ const App = () => {
                 timestamp,
                 firstname,
                 employeeId,
-                // department,
-                // learningChannel: learningChannel || "N/A",
               };
             })
             .filter((employee) => employee.employeeId);
@@ -97,14 +89,8 @@ const App = () => {
             throw new Error("No valid employees found in CSV");
           }
 
-          // Generate random epochs for each employee
-          // const employeesWithRandomEpoch = parsedEmployees.map((employee) => ({
-          //   ...employee,
-          //   randomEpoch: Math.floor(Math.random() * 10000000000), // Random epoch
-          // }));
-
           setEmployees(parsedEmployees);
-          // setEmployeesWithEpoch(employeesWithRandomEpoch);
+          setAvailableEmployees(parsedEmployees);
           setError(null);
           setWheelKey((prevKey) => prevKey + 1);
         } catch (err) {
@@ -116,15 +102,23 @@ const App = () => {
   }, []);
 
   const onFinished = (winner) => {
-    const selectedEmployee = employees.find((emp) => emp.employeeId === winner);
-    setSelectedEmployee(selectedEmployee);
-    setSpinResults((prevResults) => [...prevResults, selectedEmployee]);
-    // setCurrentEpoch(prevEpoch => prevEpoch + 1);
-  };
+    // Find the selected employee
+    const selectedEmployee = availableEmployees.find((emp) => emp.employeeId === winner);
+    
+    if (selectedEmployee) {
+      // Update selected employee and spin results
+      setSelectedEmployee(selectedEmployee);
+      setSpinResults((prevResults) => [...prevResults, selectedEmployee]);
 
-  useEffect(() => {
-    setWheelKey((prevKey) => prevKey + 1);
-  }, [employees]);
+      // Remove the selected employee from available employees
+      setAvailableEmployees((prevEmployees) => 
+        prevEmployees.filter((emp) => emp.employeeId !== winner)
+      );
+
+      // Regenerate wheel key to force re-render
+      setWheelKey((prevKey) => prevKey + 1);
+    }
+  };
 
   const [showConfetti, setShowConfetti] = useState(true);
 
@@ -133,32 +127,34 @@ const App = () => {
       setShowConfetti(false);
     }, 10000); // 10 seconds
 
-    return () => clearTimeout(timer); // Cleanup the timer on component unmount
+    return () => clearTimeout(timer);
   }, []);
+
+  // Generate colors based on available employees
+  const segColors = generateRandomColors(availableEmployees.length);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
       <h1 className="text-3xl font-bold mb-8">สุ่มกาช่าผู้โชคดี</h1>
 
       {selectedEmployee && (
-        <div className=" text-center">
+        <div className="text-center">
           <Confetti width={width} height={height} recycle={showConfetti} />
           <h2 className="text-2xl font-semibold mb-4">
             🎉 ผู้โชคดี: {selectedEmployee.employeeId} 🎉
           </h2>
-          <p>ชื่อพนักงาน : {selectedEmployee.employeeId}</p>
-
-          <p>รหัส : {selectedEmployee.department}</p>
+          <p>ชื่อพนักงาน : {selectedEmployee.timestamp}</p>
+          <p>รหัส : {selectedEmployee.employeeId}</p>
         </div>
       )}
 
       <LayoutGridPosts>
-        {employees.length > 0 && (
+        {availableEmployees.length > 0 && (
           <div className="grid grid-cols-1 items-center justify-center">
             <WheelComponent
               key={wheelKey}
-              segments={employees.map((emp) => emp.employeeId)}
-              segColors={segColors.map((color) => color)}
+              segments={availableEmployees.map((emp) => emp.employeeId)}
+              segColors={segColors}
               onFinished={(winner) => onFinished(winner)}
               primaryColor="black"
               contrastColor="white"
@@ -169,6 +165,9 @@ const App = () => {
               downDuration={600}
               fontFamily="Arial"
             />
+            <p className="text-center mt-2">
+              เหลือผู้เข้าร่วม: {availableEmployees.length} คน
+            </p>
           </div>
         )}
 
@@ -220,7 +219,6 @@ const App = () => {
                 <tr>
                   <th className="px-4 py-2 bg-gray-100">ครั้งที่</th>
                   <th className="px-4 py-2 bg-gray-100">ชื่อพนักงาน</th>
-
                   <th className="px-4 py-2 bg-gray-100">รหัส</th>
                 </tr>
               </thead>
@@ -229,7 +227,6 @@ const App = () => {
                   <tr key={index} className="border-t">
                     <td className="px-4 py-2">{index + 1}</td>
                     <td className="px-4 py-2">{result.timestamp}</td>
-
                     <td className="px-4 py-2">{result.employeeId}</td>
                   </tr>
                 ))}
@@ -238,7 +235,7 @@ const App = () => {
 
             {spinResults.length > 0 && (
               <div className="w-full max-w-2xl">
-                <div className="gird grid-cols-1 justify-between items-center mb-4">
+                <div className="grid grid-cols-1 justify-between items-center mb-4">
                   <h2 className="text-xl font-semibold">ส่งออกผลการสุ่ม</h2>
                   <button
                     onClick={exportToCSV}
@@ -248,17 +245,10 @@ const App = () => {
                     Export to CSV
                   </button>
                 </div>
-                <table className="w-full text-left border-collapse">
-                  {/* ... existing table content ... */}
-                </table>
               </div>
             )}
           </div>
         )}
-
-        <div></div>
-
-        {/* Remove the employeesWithEpoch table */}
       </LayoutGridPosts>
     </div>
   );
